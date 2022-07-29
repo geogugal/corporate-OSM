@@ -1,0 +1,1118 @@
+---
+title: "osm-revision"
+author: "jugal"
+date: "04/01/2022"
+output: html_document
+---
+
+#setup; echo = F
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+#import data
+```{r}
+library(tidyverse)
+library(ggthemes)
+setwd("D:/Users/jpatel27/OSMquality_2021")
+
+osq_tha <- read_csv("osqualityTHA.csv")
+osq_jam <- read_csv("osqualityJAM.csv")
+osq_dal <- read_csv("osqualityDAL.csv")
+osq_egy <- read_csv("osqualityEGY.csv")
+osq_den <- read_csv("osqualityDEN.csv")
+osq_sin <- read_csv("osqualitySIN.csv")
+
+```
+
+complete cases
+```{r}
+tha <- osq_tha[complete.cases(osq_tha),]
+jam <- osq_jam[complete.cases(osq_jam),]
+dal <- osq_dal[complete.cases(osq_dal),]
+egy <- osq_egy[complete.cases(osq_egy),]
+den <- osq_den[complete.cases(osq_den),]
+sin <- osq_sin[complete.cases(osq_sin),]
+
+```
+
+#long format
+thailand - long format
+```{r}
+library(janitor)
+
+thailand <- as.data.frame(t(tha)) %>%
+  row_to_names(row_number = 1)
+
+years <- c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)
+thailand$Year <- years
+rownames(thailand) <- NULL
+```
+
+jamaica - long format
+```{r}
+jamaica <- as.data.frame(t(jam)) %>%
+  row_to_names(row_number = 1)
+
+years <- c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)
+jamaica$Year <- years
+rownames(jamaica) <- NULL
+```
+
+dallas - long format
+```{r}
+dallas <- as.data.frame(t(dal)) %>%
+  row_to_names(row_number = 1)
+
+years <- c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)
+dallas$Year <- years
+rownames(dallas) <- NULL
+```
+
+egypt - long format
+```{r}
+egypt <- as.data.frame(t(egy)) %>%
+  row_to_names(row_number = 1)
+
+years <- c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)
+egypt$Year <- years
+rownames(egypt) <- NULL
+```
+
+denmark - long format
+```{r}
+denmark <- as.data.frame(t(den)) %>%
+  row_to_names(row_number = 1)
+
+years <- c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)
+denmark$Year <- years
+rownames(denmark) <- NULL
+```
+
+singapore - long format
+```{r}
+singapore <- as.data.frame(t(sin)) %>%
+  row_to_names(row_number = 1)
+
+years <- c(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021)
+singapore$Year <- years
+rownames(singapore) <- NULL
+```
+
+#thailand
+data types - thailand
+```{r}
+thailand$len_totalnetwork <- gsub(",", "", thailand$`Total Network Length`)
+thailand$len_namednetwork <- gsub(",", "", thailand$`Total Named Network Length`)
+thailand$len_maxspeed <- gsub(",", "", thailand$`Total MaxSpeed Network Length`)
+thailand$len_maxspeednamednetwork <- gsub(",", "", thailand$`Total MaxSpeed and Named Network Length`)
+thailand$len_disconnected <- gsub(",", "", thailand$`Total Disconnected Islands Length`)
+thailand$len_pedestrian <- gsub(",", "", thailand$`Total Pedestrian Network Length`)
+thailand$len_disconnected_ped <- gsub(",", "", thailand$`Total Disconnected Pedestrian Network Length`)
+thailand$xlen_disconnected <- gsub(",", "", thailand$`Average Disconnected Segment Length`)
+thailand$xlen_networksegment <- gsub(",", "", thailand$`Average Main Network Segment Length`)
+thailand$n_disconnectedislands <- gsub(",", "", thailand$`Total Number of Disconnected Islands`)
+thailand$len_unnamed <- gsub(",", "", thailand$`Total Unamed Network Length`)
+thailand$len_NOTmaxspeed <- gsub(",", "", thailand$`Total Max Speed NOT Present Length`)
+thailand$p_unnamed <- gsub("%", "", thailand$`Percentage of total network unnamed`)
+thailand$p_maxspeednamed <- gsub("%", "", thailand$`Percentage of total network with both MS and NAME`)
+thailand$p_pedestrian <- gsub("%", "", thailand$`Percentage of total network that is pedestrian`)
+thailand$p_disconnectedislands <- gsub("%", "", thailand$`Percentage of network within Disconnected Islands`)
+thailand$p_disconnectedped <- gsub("%", "", thailand$`Percentage of disconnected networks that are pedestrian`)
+thailand$randomOD <- gsub(",", "", thailand$`Random OD Matrix Efficeincy`)
+thailand$regularOD <- gsub(",", "", thailand$`Regular OD Matrix Efficeincy`)
+
+thailand$len_totalnetwork <- as.numeric(thailand$len_totalnetwork)
+thailand$len_namednetwork <- as.numeric(thailand$len_namednetwork)
+thailand$len_maxspeed <- as.numeric(thailand$len_maxspeed)
+thailand$len_maxspeednamednetwork <- as.numeric(thailand$len_maxspeednamednetwork)
+thailand$len_disconnected <- as.numeric(thailand$len_disconnected)
+thailand$len_pedestrian <- as.numeric(thailand$len_pedestrian)
+thailand$len_disconnected_ped <- as.numeric(thailand$len_disconnected_ped)
+thailand$xlen_disconnected <- as.numeric(thailand$xlen_disconnected)
+thailand$xlen_networksegment <- as.numeric(thailand$xlen_networksegment)
+thailand$n_disconnectedislands <- as.numeric(thailand$n_disconnectedislands)
+thailand$len_unnamed <- as.numeric(thailand$len_unnamed)
+thailand$len_NOTmaxspeed<- as.numeric(thailand$len_NOTmaxspeed)
+thailand$p_unnamed <- as.numeric(thailand$p_unnamed)
+thailand$p_maxspeednamed <- as.numeric(thailand$p_maxspeednamed)
+thailand$p_pedestrian <- as.numeric(thailand$p_pedestrian)
+thailand$p_disconnectedislands <- as.numeric(thailand$p_disconnectedislands)
+thailand$p_disconnectedped <- as.numeric(thailand$p_disconnectedped)
+thailand$randomOD <- as.numeric(thailand$randomOD)
+thailand$regularOD <- as.numeric(thailand$regularOD)
+
+thailand <- subset(thailand, select = c(len_totalnetwork,
+                                        len_namednetwork,
+                                        len_maxspeed,
+                                        len_maxspeednamednetwork,
+                                        len_disconnected,
+                                        len_pedestrian,
+                                        len_disconnected_ped,
+                                        xlen_disconnected,
+                                        xlen_networksegment,
+                                        n_disconnectedislands,
+                                        len_unnamed,
+                                        len_NOTmaxspeed,
+                                        p_unnamed,
+                                        p_maxspeednamed,
+                                        p_pedestrian,
+                                        p_disconnectedislands,
+                                        p_disconnectedped,
+                                        randomOD,
+                                        regularOD,
+                                        Year))
+
+```
+
+correlation - thailand
+```{r}
+library(reshape2)
+corr_thailand <- round(cor(thailand), 3)
+m_corr_thailand <- melt(corr_thailand)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(corr){
+  corr[upper.tri(corr)] <- NA
+  return(corr)
+  }
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(corr){
+  corr[lower.tri(corr)] <- NA
+  return(corr)
+  }
+
+up_triangle <- get_upper_tri(corr_thailand)
+
+m_corr_thailand <- melt(up_triangle, na.rm = T)
+
+```
+
+```{r}
+ggplot(m_corr_thailand, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.2, 0.8)) +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid")) +
+  ggtitle("                                                                             Thailand, I.Q.I") +
+  geom_text(x=4.68, y=18.5,
+            label = "correlation ( R )")
+```
+#jamaica
+data types - jamaica
+```{r}
+jamaica$len_totalnetwork <- gsub(",", "", jamaica$`Total Network Length`)
+jamaica$len_namednetwork <- gsub(",", "", jamaica$`Total Named Network Length`)
+jamaica$len_maxspeed <- gsub(",", "", jamaica$`Total MaxSpeed Network Length`)
+jamaica$len_maxspeednamednetwork <- gsub(",", "", jamaica$`Total MaxSpeed and Named Network Length`)
+jamaica$len_disconnected <- gsub(",", "", jamaica$`Total Disconnected Islands Length`)
+jamaica$len_pedestrian <- gsub(",", "", jamaica$`Total Pedestrian Network Length`)
+jamaica$len_disconnected_ped <- gsub(",", "", jamaica$`Total Disconnected Pedestrian Network Length`)
+jamaica$xlen_disconnected <- gsub(",", "", jamaica$`Average Disconnected Segment Length`)
+jamaica$xlen_networksegment <- gsub(",", "", jamaica$`Average Main Network Segment Length`)
+jamaica$n_disconnectedislands <- gsub(",", "", jamaica$`Total Number of Disconnected Islands`)
+jamaica$len_unnamed <- gsub(",", "", jamaica$`Total Unamed Network Length`)
+jamaica$len_NOTmaxspeed <- gsub(",", "", jamaica$`Total Max Speed NOT Present Length`)
+jamaica$p_unnamed <- gsub("%", "", jamaica$`Percentage of total network unnamed`)
+jamaica$p_maxspeednamed <- gsub("%", "", jamaica$`Percentage of total network with both MS and NAME`)
+jamaica$p_pedestrian <- gsub("%", "", jamaica$`Percentage of total network that is pedestrian`)
+jamaica$p_disconnectedislands <- gsub("%", "", jamaica$`Percentage of network within Disconnected Islands`)
+jamaica$p_disconnectedped <- gsub("%", "", jamaica$`Percentage of disconnected networks that are pedestrian`)
+jamaica$randomOD <- gsub(",", "", jamaica$`Random OD Matrix Efficeincy`)
+jamaica$regularOD <- gsub(",", "", jamaica$`Regular OD Matrix Efficeincy`)
+
+jamaica$len_totalnetwork <- as.numeric(jamaica$len_totalnetwork)
+jamaica$len_namednetwork <- as.numeric(jamaica$len_namednetwork)
+jamaica$len_maxspeed <- as.numeric(jamaica$len_maxspeed)
+jamaica$len_maxspeednamednetwork <- as.numeric(jamaica$len_maxspeednamednetwork)
+jamaica$len_disconnected <- as.numeric(jamaica$len_disconnected)
+jamaica$len_pedestrian <- as.numeric(jamaica$len_pedestrian)
+jamaica$len_disconnected_ped <- as.numeric(jamaica$len_disconnected_ped)
+jamaica$xlen_disconnected <- as.numeric(jamaica$xlen_disconnected)
+jamaica$xlen_networksegment <- as.numeric(jamaica$xlen_networksegment)
+jamaica$n_disconnectedislands <- as.numeric(jamaica$n_disconnectedislands)
+jamaica$len_unnamed <- as.numeric(jamaica$len_unnamed)
+jamaica$len_NOTmaxspeed<- as.numeric(jamaica$len_NOTmaxspeed)
+jamaica$p_unnamed <- as.numeric(jamaica$p_unnamed)
+jamaica$p_maxspeednamed <- as.numeric(jamaica$p_maxspeednamed)
+jamaica$p_pedestrian <- as.numeric(jamaica$p_pedestrian)
+jamaica$p_disconnectedislands <- as.numeric(jamaica$p_disconnectedislands)
+jamaica$p_disconnectedped <- as.numeric(jamaica$p_disconnectedped)
+jamaica$randomOD <- as.numeric(jamaica$randomOD)
+jamaica$regularOD <- as.numeric(jamaica$regularOD)
+
+jamaica <- subset(jamaica, select = c(len_totalnetwork,
+                                        len_namednetwork,
+                                        len_maxspeed,
+                                        len_maxspeednamednetwork,
+                                        len_disconnected,
+                                        len_pedestrian,
+                                        len_disconnected_ped,
+                                        xlen_disconnected,
+                                        xlen_networksegment,
+                                        n_disconnectedislands,
+                                        len_unnamed,
+                                        len_NOTmaxspeed,
+                                        p_unnamed,
+                                        p_maxspeednamed,
+                                        p_pedestrian,
+                                        p_disconnectedislands,
+                                        p_disconnectedped,
+                                        randomOD,
+                                        regularOD,
+                                        Year))
+
+```
+
+correlation - jamaica
+```{r}
+library(reshape2)
+corr_jamaica <- round(cor(jamaica), 3)
+m_corr_jamaica <- melt(corr_jamaica)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(corr){
+  corr[upper.tri(corr)] <- NA
+  return(corr)
+  }
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(corr){
+  corr[lower.tri(corr)] <- NA
+  return(corr)
+  }
+
+up_triangle <- get_upper_tri(corr_jamaica)
+
+m_corr_jamaica <- melt(up_triangle, na.rm = T)
+
+```
+
+```{r}
+ggplot(m_corr_jamaica, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.2, 0.8)) +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid")) +
+  ggtitle("                                                                              Jamaica, I.Q.I") +
+  geom_text(x=4.68, y=18.5,
+            label = "correlation ( R )")
+```
+#dallas
+data types - dallas
+```{r}
+dallas$len_totalnetwork <- gsub(",", "", dallas$`Total Network Length`)
+dallas$len_namednetwork <- gsub(",", "", dallas$`Total Named Network Length`)
+dallas$len_maxspeed <- gsub(",", "", dallas$`Total MaxSpeed Network Length`)
+dallas$len_maxspeednamednetwork <- gsub(",", "", dallas$`Total MaxSpeed and Named Network Length`)
+dallas$len_disconnected <- gsub(",", "", dallas$`Total Disconnected Islands Length`)
+dallas$len_pedestrian <- gsub(",", "", dallas$`Total Pedestrian Network Length`)
+dallas$len_disconnected_ped <- gsub(",", "", dallas$`Total Disconnected Pedestrian Network Length`)
+dallas$xlen_disconnected <- gsub(",", "", dallas$`Average Disconnected Segment Length`)
+dallas$xlen_networksegment <- gsub(",", "", dallas$`Average Main Network Segment Length`)
+dallas$n_disconnectedislands <- gsub(",", "", dallas$`Total Number of Disconnected Islands`)
+dallas$len_unnamed <- gsub(",", "", dallas$`Total Unamed Network Length`)
+dallas$len_NOTmaxspeed <- gsub(",", "", dallas$`Total Max Speed NOT Present Length`)
+dallas$p_unnamed <- gsub("%", "", dallas$`Percentage of total network unnamed`)
+dallas$p_maxspeednamed <- gsub("%", "", dallas$`Percentage of total network with both MS and NAME`)
+dallas$p_pedestrian <- gsub("%", "", dallas$`Percentage of total network that is pedestrian`)
+dallas$p_disconnectedislands <- gsub("%", "", dallas$`Percentage of network within Disconnected Islands`)
+dallas$p_disconnectedped <- gsub("%", "", dallas$`Percentage of disconnected networks that are pedestrian`)
+dallas$randomOD <- gsub(",", "", dallas$`Random OD Matrix Efficeincy`)
+dallas$regularOD <- gsub(",", "", dallas$`Regular OD Matrix Efficeincy`)
+
+dallas$len_totalnetwork <- as.numeric(dallas$len_totalnetwork)
+dallas$len_namednetwork <- as.numeric(dallas$len_namednetwork)
+dallas$len_maxspeed <- as.numeric(dallas$len_maxspeed)
+dallas$len_maxspeednamednetwork <- as.numeric(dallas$len_maxspeednamednetwork)
+dallas$len_disconnected <- as.numeric(dallas$len_disconnected)
+dallas$len_pedestrian <- as.numeric(dallas$len_pedestrian)
+dallas$len_disconnected_ped <- as.numeric(dallas$len_disconnected_ped)
+dallas$xlen_disconnected <- as.numeric(dallas$xlen_disconnected)
+dallas$xlen_networksegment <- as.numeric(dallas$xlen_networksegment)
+dallas$n_disconnectedislands <- as.numeric(dallas$n_disconnectedislands)
+dallas$len_unnamed <- as.numeric(dallas$len_unnamed)
+dallas$len_NOTmaxspeed<- as.numeric(dallas$len_NOTmaxspeed)
+dallas$p_unnamed <- as.numeric(dallas$p_unnamed)
+dallas$p_maxspeednamed <- as.numeric(dallas$p_maxspeednamed)
+dallas$p_pedestrian <- as.numeric(dallas$p_pedestrian)
+dallas$p_disconnectedislands <- as.numeric(dallas$p_disconnectedislands)
+dallas$p_disconnectedped <- as.numeric(dallas$p_disconnectedped)
+dallas$randomOD <- as.numeric(dallas$randomOD)
+dallas$regularOD <- as.numeric(dallas$regularOD)
+
+dallas <- subset(dallas, select = c(len_totalnetwork,
+                                        len_namednetwork,
+                                        len_maxspeed,
+                                        len_maxspeednamednetwork,
+                                        len_disconnected,
+                                        len_pedestrian,
+                                        len_disconnected_ped,
+                                        xlen_disconnected,
+                                        xlen_networksegment,
+                                        n_disconnectedislands,
+                                        len_unnamed,
+                                        len_NOTmaxspeed,
+                                        p_unnamed,
+                                        p_maxspeednamed,
+                                        p_pedestrian,
+                                        p_disconnectedislands,
+                                        p_disconnectedped,
+                                        randomOD,
+                                        regularOD,
+                                        Year))
+
+```
+
+correlation - dallas
+```{r}
+library(reshape2)
+corr_dallas <- round(cor(dallas), 3)
+m_corr_dallas <- melt(corr_dallas)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(corr){
+  corr[upper.tri(corr)] <- NA
+  return(corr)
+  }
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(corr){
+  corr[lower.tri(corr)] <- NA
+  return(corr)
+  }
+
+up_triangle <- get_upper_tri(corr_dallas)
+
+m_corr_dallas <- melt(up_triangle, na.rm = T)
+
+```
+
+```{r}
+ggplot(m_corr_dallas, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.2, 0.8)) +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid")) +
+  ggtitle("                                                                                 Dallas, I.Q.I") +
+  geom_text(x=4.68, y=18.5,
+            label = "correlation ( R )")
+```
+#egypt
+data types - egypt
+```{r}
+egypt$len_totalnetwork <- gsub(",", "", egypt$`Total Network Length`)
+egypt$len_namednetwork <- gsub(",", "", egypt$`Total Named Network Length`)
+egypt$len_maxspeed <- gsub(",", "", egypt$`Total MaxSpeed Network Length`)
+egypt$len_maxspeednamednetwork <- gsub(",", "", egypt$`Total MaxSpeed and Named Network Length`)
+egypt$len_disconnected <- gsub(",", "", egypt$`Total Disconnected Islands Length`)
+egypt$len_pedestrian <- gsub(",", "", egypt$`Total Pedestrian Network Length`)
+egypt$len_disconnected_ped <- gsub(",", "", egypt$`Total Disconnected Pedestrian Network Length`)
+egypt$xlen_disconnected <- gsub(",", "", egypt$`Average Disconnected Segment Length`)
+egypt$xlen_networksegment <- gsub(",", "", egypt$`Average Main Network Segment Length`)
+egypt$n_disconnectedislands <- gsub(",", "", egypt$`Total Number of Disconnected Islands`)
+egypt$len_unnamed <- gsub(",", "", egypt$`Total Unamed Network Length`)
+egypt$len_NOTmaxspeed <- gsub(",", "", egypt$`Total Max Speed NOT Present Length`)
+egypt$p_unnamed <- gsub("%", "", egypt$`Percentage of total network unnamed`)
+egypt$p_maxspeednamed <- gsub("%", "", egypt$`Percentage of total network with both MS and NAME`)
+egypt$p_pedestrian <- gsub("%", "", egypt$`Percentage of total network that is pedestrian`)
+egypt$p_disconnectedislands <- gsub("%", "", egypt$`Percentage of network within Disconnected Islands`)
+egypt$p_disconnectedped <- gsub("%", "", egypt$`Percentage of disconnected networks that are pedestrian`)
+egypt$randomOD <- gsub(",", "", egypt$`Random OD Matrix Efficeincy`)
+egypt$regularOD <- gsub(",", "", egypt$`Regular OD Matrix Efficeincy`)
+
+egypt$len_totalnetwork <- as.numeric(egypt$len_totalnetwork)
+egypt$len_namednetwork <- as.numeric(egypt$len_namednetwork)
+egypt$len_maxspeed <- as.numeric(egypt$len_maxspeed)
+egypt$len_maxspeednamednetwork <- as.numeric(egypt$len_maxspeednamednetwork)
+egypt$len_disconnected <- as.numeric(egypt$len_disconnected)
+egypt$len_pedestrian <- as.numeric(egypt$len_pedestrian)
+egypt$len_disconnected_ped <- as.numeric(egypt$len_disconnected_ped)
+egypt$xlen_disconnected <- as.numeric(egypt$xlen_disconnected)
+egypt$xlen_networksegment <- as.numeric(egypt$xlen_networksegment)
+egypt$n_disconnectedislands <- as.numeric(egypt$n_disconnectedislands)
+egypt$len_unnamed <- as.numeric(egypt$len_unnamed)
+egypt$len_NOTmaxspeed<- as.numeric(egypt$len_NOTmaxspeed)
+egypt$p_unnamed <- as.numeric(egypt$p_unnamed)
+egypt$p_maxspeednamed <- as.numeric(egypt$p_maxspeednamed)
+egypt$p_pedestrian <- as.numeric(egypt$p_pedestrian)
+egypt$p_disconnectedislands <- as.numeric(egypt$p_disconnectedislands)
+egypt$p_disconnectedped <- as.numeric(egypt$p_disconnectedped)
+egypt$randomOD <- as.numeric(egypt$randomOD)
+egypt$regularOD <- as.numeric(egypt$regularOD)
+
+egypt <- subset(egypt, select = c(len_totalnetwork,
+                                        len_namednetwork,
+                                        len_maxspeed,
+                                        len_maxspeednamednetwork,
+                                        len_disconnected,
+                                        len_pedestrian,
+                                        len_disconnected_ped,
+                                        xlen_disconnected,
+                                        xlen_networksegment,
+                                        n_disconnectedislands,
+                                        len_unnamed,
+                                        len_NOTmaxspeed,
+                                        p_unnamed,
+                                        p_maxspeednamed,
+                                        p_pedestrian,
+                                        p_disconnectedislands,
+                                        p_disconnectedped,
+                                        randomOD,
+                                        regularOD,
+                                        Year))
+
+```
+
+correlation - egypt
+```{r}
+library(reshape2)
+corr_egypt <- round(cor(egypt), 3)
+m_corr_egypt <- melt(corr_egypt)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(corr){
+  corr[upper.tri(corr)] <- NA
+  return(corr)
+  }
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(corr){
+  corr[lower.tri(corr)] <- NA
+  return(corr)
+  }
+
+up_triangle <- get_upper_tri(corr_egypt)
+
+m_corr_egypt <- melt(up_triangle, na.rm = T)
+
+```
+
+```{r}
+ggplot(m_corr_egypt, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.2, 0.8)) +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid")) +
+  ggtitle("                                                                                  Egypt, I.Q.I") +
+  geom_text(x=4.68, y=18.5,
+            label = "correlation ( R )")
+```
+#denmark
+data types - denmark
+```{r}
+denmark$len_totalnetwork <- gsub(",", "", denmark$`Total Network Length`)
+denmark$len_namednetwork <- gsub(",", "", denmark$`Total Named Network Length`)
+denmark$len_maxspeed <- gsub(",", "", denmark$`Total MaxSpeed Network Length`)
+denmark$len_maxspeednamednetwork <- gsub(",", "", denmark$`Total MaxSpeed and Named Network Length`)
+denmark$len_disconnected <- gsub(",", "", denmark$`Total Disconnected Islands Length`)
+denmark$len_pedestrian <- gsub(",", "", denmark$`Total Pedestrian Network Length`)
+denmark$len_disconnected_ped <- gsub(",", "", denmark$`Total Disconnected Pedestrian Network Length`)
+denmark$xlen_disconnected <- gsub(",", "", denmark$`Average Disconnected Segment Length`)
+denmark$xlen_networksegment <- gsub(",", "", denmark$`Average Main Network Segment Length`)
+denmark$n_disconnectedislands <- gsub(",", "", denmark$`Total Number of Disconnected Islands`)
+denmark$len_unnamed <- gsub(",", "", denmark$`Total Unamed Network Length`)
+denmark$len_NOTmaxspeed <- gsub(",", "", denmark$`Total Max Speed NOT Present Length`)
+denmark$p_unnamed <- gsub("%", "", denmark$`Percentage of total network unnamed`)
+denmark$p_maxspeednamed <- gsub("%", "", denmark$`Percentage of total network with both MS and NAME`)
+denmark$p_pedestrian <- gsub("%", "", denmark$`Percentage of total network that is pedestrian`)
+denmark$p_disconnectedislands <- gsub("%", "", denmark$`Percentage of network within Disconnected Islands`)
+denmark$p_disconnectedped <- gsub("%", "", denmark$`Percentage of disconnected networks that are pedestrian`)
+denmark$randomOD <- gsub(",", "", denmark$`Random OD Matrix Efficeincy`)
+denmark$regularOD <- gsub(",", "", denmark$`Regular OD Matrix Efficeincy`)
+
+denmark$len_totalnetwork <- as.numeric(denmark$len_totalnetwork)
+denmark$len_namednetwork <- as.numeric(denmark$len_namednetwork)
+denmark$len_maxspeed <- as.numeric(denmark$len_maxspeed)
+denmark$len_maxspeednamednetwork <- as.numeric(denmark$len_maxspeednamednetwork)
+denmark$len_disconnected <- as.numeric(denmark$len_disconnected)
+denmark$len_pedestrian <- as.numeric(denmark$len_pedestrian)
+denmark$len_disconnected_ped <- as.numeric(denmark$len_disconnected_ped)
+denmark$xlen_disconnected <- as.numeric(denmark$xlen_disconnected)
+denmark$xlen_networksegment <- as.numeric(denmark$xlen_networksegment)
+denmark$n_disconnectedislands <- as.numeric(denmark$n_disconnectedislands)
+denmark$len_unnamed <- as.numeric(denmark$len_unnamed)
+denmark$len_NOTmaxspeed<- as.numeric(denmark$len_NOTmaxspeed)
+denmark$p_unnamed <- as.numeric(denmark$p_unnamed)
+denmark$p_maxspeednamed <- as.numeric(denmark$p_maxspeednamed)
+denmark$p_pedestrian <- as.numeric(denmark$p_pedestrian)
+denmark$p_disconnectedislands <- as.numeric(denmark$p_disconnectedislands)
+denmark$p_disconnectedped <- as.numeric(denmark$p_disconnectedped)
+denmark$randomOD <- as.numeric(denmark$randomOD)
+denmark$regularOD <- as.numeric(denmark$regularOD)
+
+denmark <- subset(denmark, select = c(len_totalnetwork,
+                                        len_namednetwork,
+                                        len_maxspeed,
+                                        len_maxspeednamednetwork,
+                                        len_disconnected,
+                                        len_pedestrian,
+                                        len_disconnected_ped,
+                                        xlen_disconnected,
+                                        xlen_networksegment,
+                                        n_disconnectedislands,
+                                        len_unnamed,
+                                        len_NOTmaxspeed,
+                                        p_unnamed,
+                                        p_maxspeednamed,
+                                        p_pedestrian,
+                                        p_disconnectedislands,
+                                        p_disconnectedped,
+                                        randomOD,
+                                        regularOD,
+                                        Year))
+
+```
+
+correlation - denmark
+```{r}
+library(reshape2)
+corr_denmark <- round(cor(denmark), 3)
+m_corr_denmark <- melt(corr_denmark)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(corr){
+  corr[upper.tri(corr)] <- NA
+  return(corr)
+  }
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(corr){
+  corr[lower.tri(corr)] <- NA
+  return(corr)
+  }
+
+up_triangle <- get_upper_tri(corr_denmark)
+
+m_corr_denmark <- melt(up_triangle, na.rm = T)
+
+```
+
+```{r}
+ggplot(m_corr_denmark, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.2, 0.8)) +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid")) +
+  ggtitle("                                                                             Denmark, I.Q.I") +
+  geom_text(x=4.68, y=18.5,
+            label = "correlation ( R )")
+```
+#singapore
+data types - singapore
+```{r}
+singapore$len_totalnetwork <- gsub(",", "", singapore$`Total Network Length`)
+singapore$len_namednetwork <- gsub(",", "", singapore$`Total Named Network Length`)
+singapore$len_maxspeed <- gsub(",", "", singapore$`Total MaxSpeed Network Length`)
+singapore$len_maxspeednamednetwork <- gsub(",", "", singapore$`Total MaxSpeed and Named Network Length`)
+singapore$len_disconnected <- gsub(",", "", singapore$`Total Disconnected Islands Length`)
+singapore$len_pedestrian <- gsub(",", "", singapore$`Total Pedestrian Network Length`)
+singapore$len_disconnected_ped <- gsub(",", "", singapore$`Total Disconnected Pedestrian Network Length`)
+singapore$xlen_disconnected <- gsub(",", "", singapore$`Average Disconnected Segment Length`)
+singapore$xlen_networksegment <- gsub(",", "", singapore$`Average Main Network Segment Length`)
+singapore$n_disconnectedislands <- gsub(",", "", singapore$`Total Number of Disconnected Islands`)
+singapore$len_unnamed <- gsub(",", "", singapore$`Total Unamed Network Length`)
+singapore$len_NOTmaxspeed <- gsub(",", "", singapore$`Total Max Speed NOT Present Length`)
+singapore$p_unnamed <- gsub("%", "", singapore$`Percentage of total network unnamed`)
+singapore$p_maxspeednamed <- gsub("%", "", singapore$`Percentage of total network with both MS and NAME`)
+singapore$p_pedestrian <- gsub("%", "", singapore$`Percentage of total network that is pedestrian`)
+singapore$p_disconnectedislands <- gsub("%", "", singapore$`Percentage of network within Disconnected Islands`)
+singapore$p_disconnectedped <- gsub("%", "", singapore$`Percentage of disconnected networks that are pedestrian`)
+singapore$randomOD <- gsub(",", "", singapore$`Random OD Matrix Efficeincy`)
+singapore$regularOD <- gsub(",", "", singapore$`Regular OD Matrix Efficeincy`)
+
+singapore$len_totalnetwork <- as.numeric(singapore$len_totalnetwork)
+singapore$len_namednetwork <- as.numeric(singapore$len_namednetwork)
+singapore$len_maxspeed <- as.numeric(singapore$len_maxspeed)
+singapore$len_maxspeednamednetwork <- as.numeric(singapore$len_maxspeednamednetwork)
+singapore$len_disconnected <- as.numeric(singapore$len_disconnected)
+singapore$len_pedestrian <- as.numeric(singapore$len_pedestrian)
+singapore$len_disconnected_ped <- as.numeric(singapore$len_disconnected_ped)
+singapore$xlen_disconnected <- as.numeric(singapore$xlen_disconnected)
+singapore$xlen_networksegment <- as.numeric(singapore$xlen_networksegment)
+singapore$n_disconnectedislands <- as.numeric(singapore$n_disconnectedislands)
+singapore$len_unnamed <- as.numeric(singapore$len_unnamed)
+singapore$len_NOTmaxspeed<- as.numeric(singapore$len_NOTmaxspeed)
+singapore$p_unnamed <- as.numeric(singapore$p_unnamed)
+singapore$p_maxspeednamed <- as.numeric(singapore$p_maxspeednamed)
+singapore$p_pedestrian <- as.numeric(singapore$p_pedestrian)
+singapore$p_disconnectedislands <- as.numeric(singapore$p_disconnectedislands)
+singapore$p_disconnectedped <- as.numeric(singapore$p_disconnectedped)
+singapore$randomOD <- as.numeric(singapore$randomOD)
+singapore$regularOD <- as.numeric(singapore$regularOD)
+
+singapore <- subset(singapore, select = c(len_totalnetwork,
+                                        len_namednetwork,
+                                        len_maxspeed,
+                                        len_maxspeednamednetwork,
+                                        len_disconnected,
+                                        len_pedestrian,
+                                        len_disconnected_ped,
+                                        xlen_disconnected,
+                                        xlen_networksegment,
+                                        n_disconnectedislands,
+                                        len_unnamed,
+                                        len_NOTmaxspeed,
+                                        p_unnamed,
+                                        p_maxspeednamed,
+                                        p_pedestrian,
+                                        p_disconnectedislands,
+                                        p_disconnectedped,
+                                        randomOD,
+                                        regularOD,
+                                        Year))
+
+```
+
+correlation - singapore
+```{r}
+library(reshape2)
+corr_singapore <- round(cor(singapore), 3)
+m_corr_singapore <- melt(corr_singapore)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(corr){
+  corr[upper.tri(corr)] <- NA
+  return(corr)
+  }
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(corr){
+  corr[lower.tri(corr)] <- NA
+  return(corr)
+  }
+
+up_triangle <- get_upper_tri(corr_singapore)
+
+m_corr_singapore <- melt(up_triangle, na.rm = T)
+
+```
+
+```{r}
+ggplot(m_corr_singapore, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = c(0.2, 0.8)) +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid")) +
+  ggtitle("                                                                           Singapore, I.Q.I") +
+  geom_text(x=4.68, y=18.5,
+            label = "correlation ( R )")
+```
+#ggarrange
+```{r}
+thailand_cplot <- ggplot(m_corr_thailand, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none") +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"))
+
+jamaica_cplot <- ggplot(m_corr_jamaica, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none") +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"))
+
+dallas_cplot <- ggplot(m_corr_dallas, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none") +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"))
+
+egypt_cplot <- ggplot(m_corr_egypt, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none") +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"))
+
+denmark_cplot <- ggplot(m_corr_denmark, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none") +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"))
+
+singapore_cplot <- ggplot(m_corr_singapore, 
+       aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), space = "Lab") +
+  scale_y_discrete(position = "right",
+                   labels = c("LENGTH TOTAL NETWORK",
+                              "LENGTH NAMED",
+                              "LENGTH MAX SPEED",
+                              "LENGTH MAX SPEED NAMED",
+                              "LENGTH DISCONNECTED",
+                              "LENGTH PEDESTRIAN (PED.)",
+                              "LENGTH DISCONNECTED PED.",
+                              "AVG. LENGTH DISCONNECTED",
+                              "AVG. LENGTH OF NETWORK SEGMENT",
+                              "# OF DISCONNECTED ISLANDS",
+                              "LENGTH UN-NAMED",
+                              "LENGTH W/OUT MAX SPEED",
+                              "% UN-NAMED",
+                              "% MAX SPEED",
+                              "% PEDESTRAIN",
+                              "% DISCONNECTED ISLANDS",
+                              "% DISCONNECTED PED.",
+                              "RAND. OD MATRIX",
+                              "REG. OD MATRIX",
+                              "YEAR")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "none") +
+  theme(legend.direction = "horizontal") +
+  theme(panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"))
+```
+
+```{r}
+library(ggpubr)
+arrange_plot <- ggarrange(thailand_cplot,
+                          jamaica_cplot,
+                          dallas_cplot,
+                          egypt_cplot,
+                          denmark_cplot,
+                          singapore_cplot, 
+                          labels = c("THAILAND", 
+                                     "JAMAICA",
+                                     "DALLAS",
+                                     "EGYPT",
+                                     "DENMARK",
+                                     "SINGAPORE"),
+                          ncol = 2, nrow = 3)
+
+arrange_plot
+```
